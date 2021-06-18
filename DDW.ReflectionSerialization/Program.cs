@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting;
+using System.Text.RegularExpressions;
 
 namespace DDW.ReflectionSerialization
 {
@@ -19,7 +22,7 @@ namespace DDW.ReflectionSerialization
             Car car = default;
             string StrObjSer = default;
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 1; i++)
             {
                 car = new Car();
                 stopwatchSerialize.Start();
@@ -79,18 +82,15 @@ namespace DDW.ReflectionSerialization
 
             FieldInfo[] fieldInfos = type.GetFields();
 
-            var hh = from k in propertyInfos select k;
+            //Dictionary<string, string> valuePairs = new Dictionary<string, string>();
 
-            strObjSer = string.Join(separator, propertyInfos.Select(x => new {_ = x.Name, Value = x.GetValue(obj)}));
-            //strObjSer = string.Join(separator, propertyInfos.Select(x => x.Name x.GetValue(obj)));
+            //var result = propertyInfos.Select(x => new {PropertyName = x.Name, Value = x.GetValue(obj)});
+            var result = propertyInfos.Select(x => new {v = x.Name + "=" + x.GetValue(obj) });
 
-            //string txt2 = string.Join(separator, fieldInfos.Select(x => x.Name));
 
+
+            strObjSer = string.Join(separator, result);
             
-
-            //var queryLondonCustomers = from cust in customers
-            //                           where cust.City == "London"
-            //                           select cust;
 
         }
 
@@ -106,17 +106,40 @@ namespace DDW.ReflectionSerialization
 
             FieldInfo[] fieldInfos = type.GetFields();
 
-            var result = Activator.CreateInstance(type);
+            Object result = Activator.CreateInstance(type);
+
+           
 
             var NumValuePair = txt.Split(separator);
-
-            var t = NumValuePair[0].Split(',');
-
-            var tt = type.GetField(t[0]);
-
-            Console.WriteLine(tt);
             
-            //return null;
+            
+
+            for (int i = 0; i < NumValuePair.Length; i++)
+            {
+
+                ValueRR(NumValuePair[i].Split(','), out string gg);
+                
+                //mystring.Substring(mystring.IndexOf("-") + 1)
+                Console.WriteLine(gg);
+            }
+
+
+        }
+
+        private static void ValueRR(string[] vs, out string propertyText)
+        {
+            int indexOfChar;
+            propertyText = default;
+
+            //Match re = Regex.Match(vs[0], @"\b(\w+)");
+
+            Match re = Regex.Match(vs[0], @"\b(\w+)*");
+
+            for (int i = 0; i < vs.Length; i++)
+            {
+                indexOfChar = vs[i].IndexOf('=') + 1;
+                propertyText = vs[i].Substring(indexOfChar).Trim();
+            }
         }
     }
 }
