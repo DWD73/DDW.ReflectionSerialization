@@ -11,16 +11,19 @@ namespace DDW.ReflectionSerialization
        
         Random rnd = new Random();
 
-        public Model Model { get; private set; }
+        public string ID { get; set; }
+        public string Model { get; set; }
         public double Price { get; set; }      
         public int Quantity { get; set; }
         public int HashcodeCar { get; set; }
-        public readonly Guid ID;
+        
 
-        public Car()
+        public Car() { }
+      
+        public Car(Guid guid)
         {
-            ID = Guid.NewGuid();
-            Model = (Model)rnd.Next(4);
+            ID = guid.ToString();
+            Model = ((Model)rnd.Next(4)).ToString();
             Price = Convert.ToDouble(rnd.Next(1000, 15000) * 1.5);
             Quantity = rnd.Next(1, 10);
             HashcodeCar = this.GetHashCode();
@@ -36,7 +39,7 @@ namespace DDW.ReflectionSerialization
 
     public enum Model : int
     {
-        Toyote, Volvo, Hyundai, Kia
+        Toyota, Volvo, Hyundai, Kia, Mercedes
     }
 
     public enum CarBoxing : int
