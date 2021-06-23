@@ -1,12 +1,11 @@
-﻿using System;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
-using CsvHelper;
-using CsvHelper.Configuration;
-using System.Threading.Tasks;
-using System.Globalization;
 
 namespace DDW.ReflectionSerialization
 {
@@ -41,27 +40,7 @@ namespace DDW.ReflectionSerialization
         public static T CarDeSerializeJSON(string jsonText)
         {
             return JsonSerializer.Deserialize<T>(jsonText);
-        }
-
-        //public static async Task CarSerializeJSON(Car obj)
-        //{           
-        //    using (FileStream fs = new FileStream("car.json", FileMode.OpenOrCreate))
-        //    {              
-        //        await JsonSerializer.SerializeAsync<Car>(fs, obj);              
-        //    }          
-        //}
-
-        //public static async Task<Car> CarDeSerializeJSON()
-        //{
-        //    Car car;
-
-        //    using (FileStream fs = new FileStream("car.json", FileMode.OpenOrCreate))
-        //    {
-        //        car = await JsonSerializer.DeserializeAsync<Car>(fs);
-        //    }
-
-        //    return car;
-        //}
+        }      
 
         public static void CarDeSerialize(string txt, out T resultOut)
         {
@@ -97,7 +76,7 @@ namespace DDW.ReflectionSerialization
             }
         }
 
-        public static void SetDataCSV(T obj)
+        public static void SetDataToCSV(T obj)
         {
             var list = new List<T>();
             list.Add(obj);
@@ -110,71 +89,32 @@ namespace DDW.ReflectionSerialization
             {
                 csv.WriteRecords(list);
             }
-
-            ////read from csv
-            //using (var sr = new StreamReader("test.csv"))
-            //using (var csv = new CsvReader(sr, cfg))
-            //{
-            //    var records = csv.GetRecords<MyObject>();
-            //    foreach (var item in records)
-            //    {
-            //        System.Console.WriteLine(item);
-            //    }
-            //}
+           
         }
 
-        //public static IEnumerable<T> GetDataCSV(T obj)
+       
         public static List<T> GetDataCSV()
         {
-            var list = new List<T>();
-            //list.Add(obj);
+            var list = new List<T>();           
 
             var cfg = new CsvConfiguration(CultureInfo.InvariantCulture);
             cfg.Delimiter = ",";
-
-            //using (var sw = new StreamWriter("test.csv"))
-            //using (var csv = new CsvWriter(sw, cfg))
-            //{
-            //    csv.WriteRecords(list);
-            //}
-
-            //read from csv
+           
             using (var sr = new StreamReader("test.csv"))
             using (var csv = new CsvReader(sr, cfg))
             {
                 var records = csv.GetRecords<T>();
-                //list.Add(csv.GetRecords<T>());
+                
                 foreach (var item in records)
                 {
-                    list.Add(item);
-                    //System.Console.WriteLine(item);
+                    list.Add(item);                    
                 }
             }
 
             return list;
 
-
         }
 
     }
-
-    class MyObject
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public double SomeValue { get; set; }
-        public bool SomeBoolean { get; set; }
-
-        public string ToCSV(bool msexcel)
-        {
-            var delimiter = msexcel ? ";" : ",";
-
-            return $"{Id}{delimiter}" +
-                $"{Name}{delimiter}" +
-                $"{SomeValue.ToString(CultureInfo.InvariantCulture)}{delimiter}" +
-                $"{SomeBoolean}";
-        }
-    }
-
 
 }

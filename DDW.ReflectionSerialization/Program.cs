@@ -1,36 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Remoting;
-using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace DDW.ReflectionSerialization
 {
     class Program
     {
         static Stopwatch stopwatchSerialize = new Stopwatch();
-        static Stopwatch stopwatchSerializeOut = new Stopwatch();        
+        static Stopwatch stopwatchSerializeOut = new Stopwatch();
+        static Stopwatch stopwatchSerializeJSON = new Stopwatch();
+        static Stopwatch stopwatchSerializeOutJSON = new Stopwatch();
+        static Stopwatch stopwatchSerializeCSV = new Stopwatch();
+        static Stopwatch stopwatchSerializeOutCSV = new Stopwatch();
 
         static void Main(string[] args)
         {
             Start();
-        }      
+        }
 
         public static void Start()
         {
             Car car = default;
             Car carTest = default;
+            List<Car> cars = new List<Car>();
             string StrObjSer = default;
             string jsonText = default;
-            
-            
 
-
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 1000000; i++)
             {
-               
+
                 car = new Car(Guid.NewGuid());
                 stopwatchSerialize.Start();
                 GetStringSerialize(car, out StrObjSer);
@@ -42,9 +40,9 @@ namespace DDW.ReflectionSerialization
 
 
                 if (i % 80000 == 0) Console.Write($" - { i } - ");
-            }          
+            }
 
-            Console.WriteLine($"\nВремя сериализации\n\t {TimeElapsedToString(stopwatchSerialize.Elapsed)}\nРезультат:\n\t{StrObjSer}");          
+            Console.WriteLine($"\nВремя сериализации\n\t {TimeElapsedToString(stopwatchSerialize.Elapsed)}\nРезультат:\n\t{StrObjSer}");
 
             Console.WriteLine($"\nВремя десериализации\n\t {TimeElapsedToString(stopwatchSerializeOut.Elapsed)}" +
                 $"\nРезультат:" +
@@ -52,82 +50,79 @@ namespace DDW.ReflectionSerialization
                 $"\n\t{carTest.Model}" +
                 $"\n\t{carTest.Price}" +
                 $"\n\t{carTest.Quantity}" +
-                $"\n\t{carTest.HashcodeCar}"
+                $"\n\t{carTest.HashcodeCar}\n"
                 );
 
+
+            for (int i = 0; i < 10000; i++)
+            {
+                car = new Car(Guid.NewGuid());
+
+                stopwatchSerializeJSON.Start();
+                GetSerializeJSON(car, out jsonText);
+                stopwatchSerializeJSON.Stop();
+
+                stopwatchSerializeOutJSON.Start();
+                GetDeSerializeJSON(jsonText, out carTest);
+                stopwatchSerializeOutJSON.Stop();
+
+                if (i % 2000 == 0) Console.Write($" - { i } - ");
+            }
+
+            Console.WriteLine(new string('-', 80));
+
+            Console.WriteLine($"\nВремя json-сериализации\n\t {TimeElapsedToString(stopwatchSerializeJSON.Elapsed)}\nРезультат:\n\t{jsonText}");
+
+            Console.WriteLine($"\nВремя json-десериализации\n\t {TimeElapsedToString(stopwatchSerializeOutJSON.Elapsed)}" +
+                $"\nРезультат:" +
+                $"\n\t{carTest.ID}" +
+                $"\n\t{carTest.Model}" +
+                $"\n\t{carTest.Price}" +
+                $"\n\t{carTest.Quantity}" +
+                $"\n\t{carTest.HashcodeCar}\n"
+                );
 
             for (int i = 0; i < 1000; i++)
-            {              
-                car = new Car(Guid.NewGuid());
-                
-                stopwatchSerialize.Start();             
-                GetSerializeJSON(car, out jsonText);              
-                stopwatchSerialize.Stop();
-
-                stopwatchSerializeOut.Start();
-                GetDeSerializeJSON(jsonText, out carTest);
-                stopwatchSerializeOut.Stop();
-            }
-
-            Console.WriteLine(new string('-', 80));
-
-            Console.WriteLine($"\nВремя json-сериализации\n\t {TimeElapsedToString(stopwatchSerialize.Elapsed)}\nРезультат:\n\t{jsonText}");
-
-            Console.WriteLine($"\nВремя json-десериализации\n\t {TimeElapsedToString(stopwatchSerializeOut.Elapsed)}" +
-                $"\nРезультат:" +
-                $"\n\t{carTest.ID}" +
-                $"\n\t{carTest.Model}" +
-                $"\n\t{carTest.Price}" +
-                $"\n\t{carTest.Quantity}" +
-                $"\n\t{carTest.HashcodeCar}"
-                );
-
-
-            
-
-            for (int i = 0; i < 10; i++)
             {
                 car = new Car(Guid.NewGuid());
 
-                stopwatchSerialize.Start();
-                SetDataFromCSV(car);
-                stopwatchSerialize.Stop();
+                stopwatchSerializeCSV.Start();
+                SetDataCSV(car);
+                stopwatchSerializeCSV.Stop();
 
-                stopwatchSerializeOut.Start();
-                GetDataFromCSV();
-                stopwatchSerializeOut.Stop();
+                stopwatchSerializeOutCSV.Start();
+                GetDataFromCSV(out cars);
+                stopwatchSerializeOutCSV.Stop();
+
+                if (i % 100 == 0) Console.Write($" - { i } - ");
             }
 
 
             Console.WriteLine(new string('-', 80));
 
-            Console.WriteLine($"\nВремя json-сериализации\n\t {TimeElapsedToString(stopwatchSerialize.Elapsed)}\nРезультат:\n\t{jsonText}");
+            Console.WriteLine($"\nВремя csv-сериализации\n\t {TimeElapsedToString(stopwatchSerializeCSV.Elapsed)}\nРезультат:- запись в файл");
 
-            Console.WriteLine($"\nВремя json-десериализации\n\t {TimeElapsedToString(stopwatchSerializeOut.Elapsed)}" +
+            foreach (Car car2 in cars)
+            {           
+            Console.WriteLine($"\nВремя csv-десериализации\n\t {TimeElapsedToString(stopwatchSerializeOutCSV.Elapsed)}" +
                 $"\nРезультат:" +
-                $"\n\t{carTest.ID}" +
-                $"\n\t{carTest.Model}" +
-                $"\n\t{carTest.Price}" +
-                $"\n\t{carTest.Quantity}" +
-                $"\n\t{carTest.HashcodeCar}"
+                $"\n\t{car2.ID}" +
+                $"\n\t{car2.Model}" +
+                $"\n\t{car2.Price}" +
+                $"\n\t{car2.Quantity}" +
+                $"\n\t{car2.HashcodeCar}"
                 );
-
-
-
+            }
         }
 
-        public static void GetDataFromCSV()
+        public static void GetDataFromCSV(out List<Car> cars)
         {           
-            var cars = CarSerReflection<Car>.GetDataCSV();
-            foreach(Car car in cars)
-            {
-                Console.WriteLine(car.Model);
-            }          
+            cars = CarSerReflection<Car>.GetDataCSV();          
         }
 
-        public static void SetDataFromCSV(Car car)
+        public static void SetDataCSV(Car car)
         {
-            CarSerReflection<Car>.SetDataCSV(car);
+            CarSerReflection<Car>.SetDataToCSV(car);
         }
 
         public static void GetStringSerialize(Car car, out string StrObjSer)
